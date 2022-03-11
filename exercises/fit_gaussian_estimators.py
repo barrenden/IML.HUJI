@@ -1,3 +1,6 @@
+import pandas as pd
+import plotly.express
+
 from IMLearn.learners import UnivariateGaussian, MultivariateGaussian
 import numpy as np
 import plotly.graph_objects as go
@@ -11,10 +14,20 @@ def test_univariate_gaussian():
     estimator = UnivariateGaussian(biased_var=False)
     estimator = estimator.fit(X)
     print(estimator.mu_, estimator.var_)
-    raise NotImplementedError()
 
     # Question 2 - Empirically showing sample mean is consistent
-    raise NotImplementedError()
+    #TODO find out why this result is weird
+    df = pd.DataFrame(columns=['sample_size', 'distance'])
+    for sample_size in range(10, 1001, 10):
+        sample = np.random.choice(X, size=sample_size)
+        model = UnivariateGaussian(biased_var=False)
+        model = model.fit(sample)
+        distance = abs(model.mu_ - 10)
+        df = pd.concat([df, pd.DataFrame({'sample_size': [sample_size],
+                                          'distance': [distance]})])
+    plotly.express.bar(df, x='sample_size', y='distance',
+                       title='distance from actual expectation as a function '
+                             'of sample size').show()
 
     # Question 3 - Plotting Empirical PDF of fitted model
     raise NotImplementedError()
