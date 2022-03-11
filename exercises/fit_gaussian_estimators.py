@@ -17,15 +17,11 @@ def test_univariate_gaussian():
 
     # Question 2 - Empirically showing sample mean is consistent
     df = pd.DataFrame(columns=['Sample Size', 'Distance from Real Expectation'])
-    increasing_sample = X.copy()
-    sample = np.array([])
-    for i in range(1, 101):
-        sample_to_add = np.random.choice(increasing_sample, 10)
-        sample = np.append(sample, sample_to_add, 0)
+    for sample_size in range(10, 1001, 10):
+        sample = X[:sample_size]
         model = UnivariateGaussian(biased_var=False)
         model = model.fit(sample)
         distance = abs(model.mu_ - 10)
-        sample_size = i * 10
         df = pd.concat([df, pd.DataFrame({'Sample Size': [sample_size],
                                           'Distance from Real Expectation': [distance]})])
     plotly.express.bar(df, x='Sample Size', y='Distance from Real Expectation',
