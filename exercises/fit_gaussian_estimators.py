@@ -16,18 +16,20 @@ def test_univariate_gaussian():
     print(estimator.mu_, estimator.var_)
 
     # Question 2 - Empirically showing sample mean is consistent
-    #TODO find out why this result is weird
-    df = pd.DataFrame(columns=['sample_size', 'distance'])
+    df = pd.DataFrame(columns=['Sample Size', 'Distance from Real Expectation'])
+    increasing_sample = X.copy()
+    sample = np.array([])
     for sample_size in range(10, 1001, 10):
-        sample = np.random.choice(X, size=sample_size)
+        sample_to_add = np.random.choice(increasing_sample, 10)
+        sample = np.append(sample, sample_to_add, 0)
         model = UnivariateGaussian(biased_var=False)
         model = model.fit(sample)
         distance = abs(model.mu_ - 10)
-        df = pd.concat([df, pd.DataFrame({'sample_size': [sample_size],
-                                          'distance': [distance]})])
-    plotly.express.bar(df, x='sample_size', y='distance',
-                       title='distance from actual expectation as a function '
-                             'of sample size').show()
+        df = pd.concat([df, pd.DataFrame({'Sample Size': [sample_size],
+                                          'Distance from Real Expectation': [distance]})])
+    plotly.express.bar(df, x='Sample Size', y='Distance from Real Expectation',
+                       title='Distance from Actual Expectation as a Function '
+                             'of Sample Size').show()
 
     # Question 3 - Plotting Empirical PDF of fitted model
     raise NotImplementedError()
