@@ -7,6 +7,10 @@ pio.templates.default = "simple_white"
 
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
+    X = np.random.normal(10, 1, 1000)
+    estimator = UnivariateGaussian(biased_var=False)
+    estimator = estimator.fit(X)
+    print(estimator.mu_, estimator.var_)
     raise NotImplementedError()
 
     # Question 2 - Empirically showing sample mean is consistent
