@@ -7,7 +7,7 @@ class UnivariateGaussian:
     """
     Class for univariate Gaussian Distribution Estimator
     """
-    def __init__(self, biased_var: bool = False) -> UnivariateGaussian:
+    def __init__(self, biased_var: bool = True) -> UnivariateGaussian:
         """
         Estimator for univariate Gaussian mean and variance parameters
 
