@@ -29,7 +29,10 @@ def test_univariate_gaussian():
                              'of Sample Size').show()
 
     # Question 3 - Plotting Empirical PDF of fitted model
-    raise NotImplementedError()
+    pdf = estimator.pdf(X)
+    df = pd.DataFrame(zip(X, pdf), columns=['Sample Value', 'Probability'])
+    plotly.express.scatter(df, x='Sample Value', y='Probability',
+                           title='PDF of Fitted Model').show()
 
 
 def test_multivariate_gaussian():
