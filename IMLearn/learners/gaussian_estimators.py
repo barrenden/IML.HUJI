@@ -150,8 +150,9 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        self.mu_ = np.mean(X, axis=0)
+        X_centered = X - self.mu_
+        self.cov_ = (np.matmul(np.transpose(X_centered), X_centered)) / (len(X) - 1)
         self.fitted_ = True
         return self
 
