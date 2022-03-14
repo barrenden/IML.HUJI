@@ -79,11 +79,7 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        res = np.array([])
-        for sample in X:
-            sample_pdf = (1 / math.sqrt(self.var_ * 2 * math.pi)) * math.e ** (-0.5 * ((sample - self.mu_) / math.sqrt(self.var_)) ** 2)
-            res = np.append(res, sample_pdf)
-        return res
+        return (math.e ** (-(X - self.mu_) ** 2 / (2 * self.var_))) / (2 * math.pi * self.var_)
 
     @staticmethod
     def log_likelihood(mu: float, sigma: float, X: np.ndarray) -> float:
