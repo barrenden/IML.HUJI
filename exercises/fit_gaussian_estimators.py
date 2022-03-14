@@ -11,7 +11,7 @@ pio.templates.default = "simple_white"
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
     X = np.random.normal(10, 1, 1000)
-    estimator = UnivariateGaussian(biased_var=False)
+    estimator = UnivariateGaussian()
     estimator = estimator.fit(X)
     print(estimator.mu_, estimator.var_)
 

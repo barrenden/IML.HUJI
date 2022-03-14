@@ -10,7 +10,7 @@ class UnivariateGaussian:
     """
     Class for univariate Gaussian Distribution Estimator
     """
-    def __init__(self, biased_var: bool = True) -> UnivariateGaussian:
+    def __init__(self, biased_var: bool = False) -> UnivariateGaussian:
         """
         Estimator for univariate Gaussian mean and variance parameters
 
@@ -55,7 +55,7 @@ class UnivariateGaussian:
         estimator is either biased or unbiased). Then sets `self.fitted_` attribute to `True`
         """
         self.mu_ = np.mean(X)
-        self.var_ = (1 / (len(X) - 1)) * sum((x - self.mu_) ** 2 for x in X)
+        self.var_ = np.sum((X - self.mu_) ** 2 / (len(X) - 1))
         self.fitted_ = True
         return self
 
