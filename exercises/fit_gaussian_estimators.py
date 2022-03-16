@@ -13,7 +13,7 @@ def test_univariate_gaussian():
     X = np.random.normal(10, 1, 1000)
     estimator = UnivariateGaussian()
     estimator = estimator.fit(X)
-    print(estimator.mu_, estimator.var_)
+    print(f'({estimator.mu_}, {estimator.var_})')
 
     # Question 2 - Empirically showing sample mean is consistent
     df = pd.DataFrame(columns=['Sample Size', 'Distance from Real Expectation'])
@@ -38,21 +38,33 @@ def test_univariate_gaussian():
 def test_multivariate_gaussian():
     # Question 4 - Draw samples and print fitted model
     mu = np.array([0, 0, 4, 0])
-    sigma = np.matrix([[1, 0.2, 0, 0.5],
+    sigma = np.array([[1, 0.2, 0, 0.5],
                        [0.2, 2, 0, 0],
                        [0, 0, 1, 0],
                        [0.5, 0, 0, 1]])
     X = np.random.multivariate_normal(mu, sigma, 1000)
     estimator = MultivariateGaussian()
-    estimator.fit(X)
+    estimator = estimator.fit(X)
     print(estimator.mu_)
     print(estimator.cov_)
 
     # Question 5 - Likelihood evaluation
-    raise NotImplementedError()
+    res = []
+    for f1 in np.linspace(-10, 10, 200):
+        for f3 in np.linspace(-10, 10, 200):
+            mu = np.array([f1, 0, f3, 0])
+            log_likelihood = MultivariateGaussian.log_likelihood(mu, sigma,
+                                                                 X)
+            res.append((f1, f3, log_likelihood))
+    df = pd.DataFrame(res, columns=['f1', 'f3', 'Log Likelihood'])
+    plotly.express.density_heatmap(df, x='f3', y='f1', z='Log Likelihood',
+                                   title='Log Likelihood by Values of f1, f3',
+                                   histfunc='avg').show()
 
     # Question 6 - Maximum likelihood
-    raise NotImplementedError()
+    #row = df[df.index == df['Log Likelihood'].idxmax()].reset_index()
+    row = df.iloc[df['Log Likelihood'].idxmax()]
+    print(f"f1: {row['f1']}, f3: {row['f3']}, Log Likelihood: {row['Log Likelihood'].round(3)}")
 
 
 if __name__ == '__main__':
