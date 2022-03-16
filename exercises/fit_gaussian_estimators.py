@@ -62,9 +62,9 @@ def test_multivariate_gaussian():
                                    histfunc='avg').show()
 
     # Question 6 - Maximum likelihood
-    #row = df[df.index == df['Log Likelihood'].idxmax()].reset_index()
     row = df.iloc[df['Log Likelihood'].idxmax()]
-    print(f"f1: {row['f1']}, f3: {row['f3']}, Log Likelihood: {row['Log Likelihood'].round(3)}")
+    print(f"f1: {row['f1']}, f3: {row['f3']},"
+          f" Log Likelihood: {row['Log Likelihood'].round(3)}")
 
 
 if __name__ == '__main__':
