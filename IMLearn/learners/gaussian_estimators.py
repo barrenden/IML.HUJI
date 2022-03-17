@@ -195,10 +195,11 @@ class MultivariateGaussian:
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
         num_of_samples = len(X)
-        log_2_pi_times_num_samples = -0.5 * num_of_samples * np.log(2 * np.pi)
+        d = mu.shape[0]
+        log_2_pi_times_num_samples = d * num_of_samples * np.log(2 * np.pi)
         log_det_sigma = slogdet(cov)[0] * slogdet(cov)[1]
-        log_det_sigma_times_num_samples = -0.5 * num_of_samples * log_det_sigma
+        log_det_sigma_times_num_samples = num_of_samples * log_det_sigma
         centered_samples = X - mu
         inv_cov = np.linalg.inv(cov)
         matrices_mul = np.sum(centered_samples @ inv_cov * centered_samples)
-        return log_2_pi_times_num_samples + log_det_sigma_times_num_samples -0.5 * matrices_mul
+        return -0.5 * (log_2_pi_times_num_samples + log_det_sigma_times_num_samples + matrices_mul)
