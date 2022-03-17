@@ -102,7 +102,10 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        raise NotImplementedError()
+        sum_square_normalized_samples = np.sum((X - mu) ** 2)
+        var_times_two = 2 * sigma
+        log_2_pi_var = np.log(np.pi * var_times_two)
+        return -1 * sum_square_normalized_samples / var_times_two - (len(X) / 2) * log_2_pi_var
 
 
 class MultivariateGaussian:
