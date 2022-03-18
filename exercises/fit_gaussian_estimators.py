@@ -63,7 +63,7 @@ def test_multivariate_gaussian():
 
     # Question 6 - Maximum likelihood
     row = df.iloc[df['Log Likelihood'].idxmax()]
-    print(f"f1: {row['f1']}, f3: {row['f3']},"
+    print(f"f1: {row['f1'].round(3)}, f3: {row['f3'].round(3)},"
           f" Log Likelihood: {row['Log Likelihood'].round(3)}")
 
 
