@@ -1,4 +1,4 @@
-
+.gitignore
 code\ examples/*.png
 code\ examples/*.gif
 *.png
@@ -8,4 +8,4 @@ figures/*.png
 __pycache__
 lab/.ipynb_checkpoints/
 code\ examples/.ipynb_checkpoints/
-
+.DS_Store
