@@ -56,7 +56,9 @@ def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     df.drop(["yr_renovated", "yr_built", "date"], axis=1, inplace=True)
 
     # treating zipcodes as categorical columns
-    df["zipcode"] = df["zipcode"].apply(lambda x: f"zipcode_{x}" if x in MOST_COMMON_ZIPCODES else "other_zipcode")
+    df["zipcode"] = df["zipcode"].apply(
+        lambda x:
+        f"zipcode_{x}" if x in MOST_COMMON_ZIPCODES else "other_zipcode")
     df = pd.concat([df, pd.get_dummies(df["zipcode"])], axis=1)
     df.drop(["zipcode"], axis=1, inplace=True)
 
