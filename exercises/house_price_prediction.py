@@ -9,6 +9,9 @@ import plotly.express as px
 import plotly.io as pio
 pio.templates.default = "simple_white"
 
+MOST_COMMON_ZIPCODES = [98103.0, 98038.0, 98115.0, 98052.0, 98117.0,
+                        98042.0, 98034.0, 98118.0, 98023.0, 98006.0]
+
 
 def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     """
@@ -39,18 +42,23 @@ def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
 
     # calculating yard size instead of whole lot size
     df["sqft_yard"] = df["sqft_lot"] - df["sqft_living"]
-    df["sqft_yard15"] = df["sqft_living15"] - df["sqft_lot15"]
+    df["sqft_yard15"] = df["sqft_lot15"] - df["sqft_living15"]
+    df = df[(df["sqft_yard"] >= 0) & (df["sqft_yard15"] >= 0)]
     df.drop(["sqft_lot", "sqft_lot15"], axis=1, inplace=True)
 
     # replacing date, yr_built and yr_renovated with age and
     # time_since_renovation
     df["yr_renovated"] = df[["yr_built", "yr_renovated"]].max(axis=1)
     df["age"] = df["date"].dt.year - df["yr_built"]
+    df = df[df["age"] >= 0]
     df["time_since_renovation"] = df["date"].dt.year - df["yr_renovated"]
+    df = df[df["time_since_renovation"] >= 0]
     df.drop(["yr_renovated", "yr_built", "date"], axis=1, inplace=True)
 
     # treating zipcodes as categorical columns
+    df["zipcode"] = df["zipcode"].apply(lambda x: f"zipcode_{x}" if x in MOST_COMMON_ZIPCODES else "other_zipcode")
     df = pd.concat([df, pd.get_dummies(df["zipcode"])], axis=1)
+    df.drop(["zipcode"], axis=1, inplace=True)
 
     return df.loc[:, df.columns != "price"], df["price"]
 
@@ -72,16 +80,23 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
-    raise NotImplementedError()
+    y_std = y.std()
+    for feature in X.columns:
+        column = X[feature]
+        pearson_corr = column.cov(y) / (column.std() * y_std)
+        df = pd.DataFrame(zip(column, y), columns=[feature, "price"])
+        fig = px.scatter(df, x=feature, y="price",
+                         title=f"{feature}: corr={pearson_corr}")
+        fig.write_image(f"{output_path}/{feature}.jpg")
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
+    samples, results = load_data("../datasets/house_prices.csv")
 
     # Question 2 - Feature evaluation with respect to response
-    raise NotImplementedError()
+    feature_evaluation(samples, results, "./house_price_prediction_plots")
 
     # Question 3 - Split samples into training- and testing sets.
     raise NotImplementedError()
