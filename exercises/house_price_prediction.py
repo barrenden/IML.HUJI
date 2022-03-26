@@ -1,7 +1,7 @@
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
 
-from typing import NoReturn
+from typing import NoReturn, Tuple
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -10,7 +10,7 @@ import plotly.io as pio
 pio.templates.default = "simple_white"
 
 
-def load_data(filename: str):
+def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Load house prices dataset and preprocess data.
     Parameters
@@ -23,7 +23,35 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
+    df = pd.read_csv(filename)
+    df = df.fillna(0)
+    # removing sample errors
+    df = df[(df["price"] > 0) & (df["bedrooms"] > 0) & (df["bathrooms"] > 0)
+            & (df["floors"] > 0) &
+            (df["sqft_lot"] > 0) & (df["sqft_living"]) > 0 &
+            (df["date"] != "0") & (df["yr_built"] > 0)]
+
+    # dropping irrelevant columns
+    df.drop(["lat", "long", "id"], axis=1, inplace=True)
+
+    # extracting months from dates
+    df["date"] = pd.to_datetime(df["date"])
+    df["date"] = df["date"].dt.month
+    df.rename(columns={"date": "month"}, inplace=True)
+
+    # calculating yard size instead of whole lot size
+    df["sqft_yard"] = df["sqft_lot"] - df["sqft_living"]
+    df["sqft_yard15"] = df["sqft_living15"] - df["sqft_lot15"]
+    df.drop(["sqft_lot", "sqft_lot15"], axis=1, inplace=True)
+
+    # replacing renovation year with max between renovation year and year built
+    df.loc[df["yr_renovated"] == 0, "yr_renovated"] = df["yr_built"]
+    df["yr_renovated"] = df[["yr_built", "yr_renovated"]].max(axis=1)
+
+    # treating zipcodes as categorical columns
+    df = pd.concat([df, pd.get_dummies(df["zipcode"])], axis=1)
+
+    return df.loc[:, df.columns != "price"], df["price"]
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
