@@ -13,7 +13,7 @@ class LinearRegression(BaseEstimator):
     Solving Ordinary Least Squares optimization problem
     """
 
-    def __init__(self, include_intercept: bool = True) -> LinearRegression:
+    def __init__(self, include_intercept: bool = True):
         """
         Instantiate a linear regression estimator
 

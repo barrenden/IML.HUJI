@@ -34,19 +34,20 @@ def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     # dropping irrelevant columns
     df.drop(["lat", "long", "id"], axis=1, inplace=True)
 
-    # extracting months from dates
+    # parsing dates
     df["date"] = pd.to_datetime(df["date"])
-    df["date"] = df["date"].dt.month
-    df.rename(columns={"date": "month"}, inplace=True)
 
     # calculating yard size instead of whole lot size
     df["sqft_yard"] = df["sqft_lot"] - df["sqft_living"]
     df["sqft_yard15"] = df["sqft_living15"] - df["sqft_lot15"]
     df.drop(["sqft_lot", "sqft_lot15"], axis=1, inplace=True)
 
-    # replacing renovation year with max between renovation year and year built
-    df.loc[df["yr_renovated"] == 0, "yr_renovated"] = df["yr_built"]
+    # replacing date, yr_built and yr_renovated with age and
+    # time_since_renovation
     df["yr_renovated"] = df[["yr_built", "yr_renovated"]].max(axis=1)
+    df["age"] = df["date"].dt.year - df["yr_built"]
+    df["time_since_renovation"] = df["date"].dt.year - df["yr_renovated"]
+    df.drop(["yr_renovated", "yr_built", "date"], axis=1, inplace=True)
 
     # treating zipcodes as categorical columns
     df = pd.concat([df, pd.get_dummies(df["zipcode"])], axis=1)
