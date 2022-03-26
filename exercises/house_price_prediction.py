@@ -28,7 +28,7 @@ def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     # removing sample errors
     df = df[(df["price"] > 0) & (df["bedrooms"] > 0) & (df["bathrooms"] > 0)
             & (df["floors"] > 0) &
-            (df["sqft_lot"] > 0) & (df["sqft_living"]) > 0 &
+            (df["sqft_lot"] > 0) & (df["sqft_living"] > 0) &
             (df["date"] != "0") & (df["yr_built"] > 0)]
 
     # dropping irrelevant columns
