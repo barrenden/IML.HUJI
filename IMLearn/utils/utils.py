@@ -33,7 +33,7 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .2
         Responses of test samples
 
     """
-    train_x = X.sample(frac=1 - train_proportion, random_state=200)
+    train_x = X.sample(frac=1 - train_proportion)
     test_x = X[~(X.index.isin(train_x.index))]
     train_y = y.loc[train_x.index]
     test_y = y.loc[test_x.index]

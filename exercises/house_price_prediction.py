@@ -9,8 +9,6 @@ import plotly.express as px
 import plotly.io as pio
 pio.templates.default = "simple_white"
 
-MOST_COMMON_ZIPCODES = [98103.0, 98038.0, 98115.0, 98052.0, 98117.0,
-                        98042.0, 98034.0, 98118.0, 98023.0, 98006.0]
 
 
 def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
@@ -32,7 +30,8 @@ def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     df = df[(df["price"] > 0) & (df["bedrooms"] > 0) & (df["bathrooms"] > 0)
             & (df["floors"] > 0) &
             (df["sqft_lot"] > 0) & (df["sqft_living"] > 0) &
-            (df["date"] != "0") & (df["yr_built"] > 0)]
+            (df["date"] != "0") & (df["yr_built"] > 0) & (df["bedrooms"] < 11)
+            & (df["sqft_lot"] < 1000000)]
 
     # dropping irrelevant columns
     df.drop(["lat", "long", "id"], axis=1, inplace=True)
@@ -56,11 +55,8 @@ def load_data(filename: str) -> Tuple[pd.DataFrame, pd.Series]:
     df.drop(["yr_renovated", "yr_built", "date"], axis=1, inplace=True)
 
     # treating zipcodes as categorical columns
-    df["zipcode"] = df["zipcode"].apply(
-        lambda x:
-        f"zipcode_{x}" if x in MOST_COMMON_ZIPCODES else "other_zipcode")
-    df = pd.concat([df, pd.get_dummies(df["zipcode"])], axis=1)
-    df.drop(["zipcode"], axis=1, inplace=True)
+    df["zipcode"] = df["zipcode"].astype(int)
+    df = pd.get_dummies(df, prefix="zipcode_", columns=["zipcode"])
 
     return df.loc[:, df.columns != "price"], df["price"]
 
@@ -98,7 +94,7 @@ if __name__ == '__main__':
     samples, results = load_data("../datasets/house_prices.csv")
 
     # Question 2 - Feature evaluation with respect to response
-    feature_evaluation(samples, results, "./house_price_prediction_plots")
+    #feature_evaluation(samples, results, "./house_price_prediction_plots")
 
     # Question 3 - Split samples into training- and testing sets.
     train_x, train_y, test_x, test_y = split_train_test(samples, results)
@@ -110,4 +106,35 @@ if __name__ == '__main__':
     #   3) Test fitted model over test set
     #   4) Store average and variance of loss over test set
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
-    raise NotImplementedError()
+    mean_losses = []
+    confidence_interval_pos = []
+    confidence_interval_neg = []
+    test_x_array = test_x.to_numpy()
+    test_y_array = test_y.to_numpy()
+    x_axis = list(range(10, 101))
+    for percentage in range(10, 101):
+        loss = []
+        for i in range(10):
+            sample = train_x.sample(frac=percentage / 100)
+            sample_y = train_y.loc[sample.index]
+            sample_y = sample_y.reset_index(drop=True)
+            regression = LinearRegression()
+            regression.fit(sample.to_numpy(), sample_y.to_numpy())
+            loss.append(regression.loss(test_x_array, test_y_array))
+        loss = np.array(loss)
+        mean_losses.append(np.mean(loss))
+        confidence_interval_pos.append(np.mean(loss) + 2 * np.std(loss))
+        confidence_interval_neg.append(np.mean(loss) - 2 * np.std(loss))
+    data = [go.Scatter(x=x_axis, y=mean_losses, name="Loss",
+                       mode="markers+lines",
+                       marker=dict(color="black", opacity=.7)),
+            go.Scatter(x=x_axis, y=confidence_interval_pos, fill=None,
+                       mode="lines", line=dict(color="lightgrey"),
+                       showlegend=False),
+            go.Scatter(x=x_axis, y=confidence_interval_neg, fill='tonexty',
+                       mode="lines", line=dict(color="lightgrey"),
+                       showlegend=False)]
+    fig = go.Figure(data=data,
+                    layout=go.Layout(title="Loss as Function of Sample Percentage",
+                    xaxis={"title": "Sample Percentage"}, yaxis={"title": "Mean Square Loss"}))
+    fig.show()
