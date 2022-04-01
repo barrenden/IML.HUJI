@@ -61,7 +61,7 @@ if __name__ == '__main__':
     px.bar(results, x="Degree", y="Loss", title="Loss as Function of Degree").show()
 
     # Question 5 - Evaluating fitted model on different countries
-    model = PolynomialFitting(3)
+    model = PolynomialFitting(5)
     train_x = israel_df["DayOfYear"]
     train_y = israel_df["Temp"]
     model.fit(train_x.to_numpy(), train_y.to_numpy())
