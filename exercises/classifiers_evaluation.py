@@ -36,16 +36,23 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "linearly_separable.npy"),
+                 ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f"../datasets/{f}")
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        raise NotImplementedError()
+
+        def callback_function(perceptron, sample, response): # TODO why does this function need to get sample and response?
+            losses.append(perceptron.loss(X, y))
+
+        Perceptron(callback=callback_function).fit(X, y)
 
         # Plot figure of loss as function of fitting iteration
-        raise NotImplementedError()
+        df = pd.DataFrame(zip(list(range(len(losses))), losses),
+                          columns=["Iteration Number", "Loss"])
+        px.line(df, x="Iteration Number", y="Loss", title=n).show()
 
 
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
