@@ -73,7 +73,6 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        self.fitted_ = True
         num_samples = X.shape[0]
         if self.include_intercept_:
             X = np.c_[np.ones(num_samples), X]  # add a column of ones to X
@@ -83,6 +82,7 @@ class Perceptron(BaseEstimator):
             for j in range(num_samples):
                 if y[j] * (np.matmul(self.coefs_, X[j])) <= 0:
                     self.coefs_ += y[j] * X[j]
+                    self.fitted_ = True
                     self.callback_(self, X[j], y[j])
                     wrong = True
                     break
