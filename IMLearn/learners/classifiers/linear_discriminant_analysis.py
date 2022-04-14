@@ -62,7 +62,6 @@ class LDA(BaseEstimator):
         sigma /= m - num_classes
         self.cov_ = sigma
         self._cov_inv = inv(self.cov_)
-        self.fitted_ = True
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -97,8 +96,13 @@ class LDA(BaseEstimator):
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
-
-        raise NotImplementedError()
+        class_likelihoods = np.zeros([X.shape[0], self.classes_.shape[0]])
+        for index in range(X.shape[0]):
+            for k in self.classes_:
+                ak = np.matmul(self._cov_inv, self.mu_[k])
+                bk = np.log(self.pi_[k]) - 0.5 * np.inner(np.inner(self.mu_[k], self._cov_inv), self.mu_[k])
+                class_likelihoods[index][k] = np.matmul(np.transpose(ak), X[index]) + bk
+        return class_likelihoods
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
