@@ -77,7 +77,8 @@ class LDA(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        class_likelihoods = self.likelihood(X)
+        return class_likelihoods.argmax(axis=1)
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -122,4 +123,4 @@ class LDA(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        return misclassification_error(y, self.predict(X))
