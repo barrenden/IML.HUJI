@@ -44,7 +44,7 @@ def run_perceptron():
         # Fit Perceptron and record loss in each fit iteration
         losses = []
 
-        def callback_function(perceptron, sample, response): # TODO why does this function need to get sample and response?
+        def callback_function(perceptron, sample, response):
             losses.append(perceptron.loss(X, y))
 
         Perceptron(callback=callback_function).fit(X, y)
@@ -86,26 +86,68 @@ def compare_gaussian_classifiers():
     """
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f"../datasets/{f}")
 
         # Fit models and predict over training set
-        raise NotImplementedError()
+        lda_model = LDA()
+        lda_model.fit(X, y)
+        lda_prediction = lda_model.predict(X)
+        gaussian_naive_model = GaussianNaiveBayes()
+        gaussian_naive_model.fit(X, y)
+        gaussian_naive_prediction = gaussian_naive_model.predict(X)
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         # Create subplots
         from IMLearn.metrics import accuracy
-        raise NotImplementedError()
+        lda_accuracy = accuracy(y, lda_prediction)
+        gaussian_naive_accuracy = accuracy(y, gaussian_naive_prediction)
+        fig = make_subplots(rows=1, cols=2, horizontal_spacing=0.01,
+                            subplot_titles=[f"LDA Accuracy: {lda_accuracy}",
+                                            f"Gaussian Naive Bayes Accuracy: {gaussian_naive_accuracy}"])
 
         # Add traces for data-points setting symbols and colors
-        raise NotImplementedError()
+        limits = np.array([X.min(axis=0) - 0.5, X.max(axis=0) + 0.5]).T
+        symbols = np.array(["circle", "triangle-up", 'square'])
+        for index, model in enumerate([lda_model, gaussian_naive_model]):
+            fig.add_trace(decision_surface(model.predict, limits[0], limits[1],
+                                           showscale=False), row=1, col=index + 1)
+            graph = go.Scatter(x=X[:, 0], y=X[:, 1], mode="markers",
+                               marker=dict(color=y, symbol=symbols[y],
+                                           colorscale=[custom[0], custom[-1]],
+                                           line=dict(color='black', width=1)),
+                               showlegend=False)
+            fig.add_trace(graph, row=1, col=index + 1)
 
         # Add `X` dots specifying fitted Gaussians' means
-        raise NotImplementedError()
+        for index, model in enumerate([lda_model, gaussian_naive_model]):
+            traces = []
+            points = []
+            for mu in model.mu_:
+                points.append(mu)
+            points = np.array(points)
+            centers = go.Scatter(x=points[:, 0], y=points[:, 1],
+                                 mode='markers',
+                                 marker={'color': 'black', 'symbol': 'x'},
+                                 showlegend=False)
+            traces.append(centers)
+            fig.add_traces(traces, rows=1, cols=index+1)
 
         # Add ellipses depicting the covariances of the fitted Gaussians
-        raise NotImplementedError()
-
+        for index, model in enumerate([lda_model, gaussian_naive_model]):
+            traces = []
+            for class_index, mu in enumerate(model.mu_):
+                if isinstance(model, LDA):
+                    cov = model.cov_
+                else:
+                    cov = np.diag(model.vars_[class_index])
+                ellipse = get_ellipse(mu, cov)
+                ellipse.showlegend = False
+                traces.append(ellipse)
+            fig.add_traces(traces, rows=1, cols=index + 1)
+        fig.update_layout(title=f"Dataset: {f.split('.')[0]}",
+                          margin=dict(t=100))
+        fig.show()
 
 if __name__ == '__main__':
     np.random.seed(0)
