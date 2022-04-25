@@ -102,10 +102,10 @@ class GaussianNaiveBayes(BaseEstimator):
             sample_likelihoods = np.zeros(self.classes_.shape[0])
             for class_index, k in enumerate(self.classes_):
                 log_pi_k = np.log(self.pi_[class_index])
-                log_det = slogdet(self.vars_[class_index])[0] * slogdet(self.vars_[class_index])[1]
+                log_det = np.prod(self.vars_[class_index])
                 centered_sample = sample - self.mu_[class_index]
                 sample_calc = np.matmul(np.transpose(centered_sample),
-                                        np.matmul(inv(self.vars_[class_index]),
+                                        np.matmul(np.diag(1 / self.vars_[class_index]),
                                                   centered_sample))
                 sample_likelihoods[
                     class_index] = constant - 0.5 * log_det - 0.5 * sample_calc + log_pi_k
