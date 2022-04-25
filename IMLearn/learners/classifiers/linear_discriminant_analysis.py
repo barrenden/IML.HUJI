@@ -1,7 +1,7 @@
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
-from numpy.linalg import det, inv
+from numpy.linalg import det, inv, slogdet
 
 
 class LDA(BaseEstimator):
@@ -53,8 +53,8 @@ class LDA(BaseEstimator):
         num_classes = unique.shape[0]
         num_features = X.shape[1]
         mu = np.zeros([num_classes, num_features])
-        for k in unique:
-            mu[k] = sum(X[np.where(y == k)]) / counts[np.where(unique == k)]
+        for index, k in enumerate(unique):
+            mu[index] = sum(X[np.where(y == k)]) / counts[np.where(unique == k)]
         self.mu_ = mu
         sigma = 0
         for i in range(len(X)):
@@ -96,14 +96,23 @@ class LDA(BaseEstimator):
 
         """
         if not self.fitted_:
-            raise ValueError("Estimator must first be fitted before calling `likelihood` function")
-        class_likelihoods = np.zeros([X.shape[0], self.classes_.shape[0]])
-        for index in range(X.shape[0]):
-            for k in self.classes_:
-                ak = np.matmul(self._cov_inv, self.mu_[k])
-                bk = np.log(self.pi_[k]) - 0.5 * np.inner(np.inner(self.mu_[k], self._cov_inv), self.mu_[k])
-                class_likelihoods[index][k] = np.matmul(np.transpose(ak), X[index]) + bk
-        return class_likelihoods
+            raise ValueError("Estimator must first be fitted before calling "
+                             "`likelihood` function")
+        m = X.shape[0]
+        d = X.shape[1]
+        constant = (-d / 2) * np.log(2 * np.pi) - 0.5 * slogdet(self.cov_)[0] * slogdet(self.cov_)[1]
+        likelihoods = np.zeros([m, self.classes_.shape[0]])
+        for sample_index, sample in enumerate(X):
+            sample_likelihoods = np.zeros(self.classes_.shape[0])
+            for class_index, k in enumerate(self.classes_):
+                log_pi_k = np.log(self.pi_[class_index])
+                centered_sample = sample - self.mu_[class_index]
+                sample_calc = np.matmul(np.transpose(centered_sample),
+                                        np.matmul(self._cov_inv, centered_sample))
+                sample_likelihoods[class_index] = constant - 0.5 * sample_calc + log_pi_k
+            likelihoods[sample_index] = sample_likelihoods
+        return likelihoods
+
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
