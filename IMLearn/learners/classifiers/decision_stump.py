@@ -40,8 +40,7 @@ class DecisionStump(BaseEstimator):
             Responses of input data to fit to
         """
         best_feature_index, best_loss, best_sign, best_threshold = None, None, None, None
-        for sign_feature_combination in product([-1, 1], range(X.shape[1])):
-            sign, feature_index = sign_feature_combination
+        for sign, feature_index in product([-1, 1], range(X.shape[1])):
             threshold, loss = self._find_threshold(X[:, feature_index], y, sign)
             if best_loss is None or loss < best_loss:
                 best_loss = loss
