@@ -66,9 +66,6 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                         subplot_titles=[f"Decision Surface for {t} Iterations" for t in T],
                         horizontal_spacing=0.01, vertical_spacing=.03)
     symbols = np.array(["", "circle", "x"])
-    best_error = np.inf
-    best_predictions = None
-    best_num_iterations = 0
     for i, num_iterations in enumerate(T):
         func = lambda x: adaboost_model.partial_predict(x, num_iterations)
         fig.add_traces([decision_surface(func, lims[0],
@@ -85,14 +82,18 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                        rows=(i // 2) + 1, cols=(i % 2) + 1)
         fig.update_layout(margin=dict(t=100)) \
             .update_xaxes(visible=False).update_yaxes(visible=False)
-        cur_error = adaboost_model.partial_loss(test_X, test_y, num_iterations)
-        if cur_error < best_error:
-            best_error = cur_error
-            best_predictions = adaboost_model.partial_predict(test_X, num_iterations)
-            best_num_iterations = num_iterations
     fig.show()
 
     # Question 3: Decision surface of best performing ensemble
+    best_error = np.inf
+    best_predictions = None
+    best_num_iterations = 0
+    for i in range(n_learners):
+        cur_error = adaboost_model.partial_loss(test_X, test_y, i)
+        if cur_error < best_error:
+            best_error = cur_error
+            best_predictions = adaboost_model.partial_predict(test_X, i)
+            best_num_iterations = i
     fig = go.Figure()
     func = lambda x: adaboost_model.partial_predict(x, best_num_iterations)
     fig.add_traces([decision_surface(func, lims[0],
@@ -113,7 +114,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
 
     # Question 4: Decision surface with weighted samples
     fig = go.Figure()
-    normalized_D = adaboost_model.D_ / np.max(adaboost_model.D_) * 5
+    normalized_D = adaboost_model.D_ / np.max(adaboost_model.D_) * 10
     fig.add_traces([decision_surface(adaboost_model.predict, lims[0],
                                      lims[1], showscale=False),
                     go.Scatter(x=train_X[:, 0], y=train_X[:, 1],
@@ -128,6 +129,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                                            size=normalized_D))])
     fig.update_layout(title=f"Train Samples Proportional to their Weight")
     fig.show()
+
 
 if __name__ == '__main__':
     np.random.seed(0)
