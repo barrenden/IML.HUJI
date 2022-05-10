@@ -107,7 +107,9 @@ class DecisionStump(BaseEstimator):
         """
         best_threshold, min_error = None, None
         num_samples = values.shape[0]
-        for threshold in values:
+        possible_thresholds = np.append(values, [np.min(values) - 1,
+                                                 np.max(values) + 1])
+        for threshold in possible_thresholds:
             results = np.where(values < threshold, -sign, sign)
             cur_error = np.sum(np.abs(labels[np.sign(results) != np.sign(labels)])) / num_samples
             if min_error is None or cur_error < min_error:
