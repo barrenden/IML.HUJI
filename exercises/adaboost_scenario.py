@@ -67,8 +67,8 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                         horizontal_spacing=0.01, vertical_spacing=.03)
     symbols = np.array(["", "circle", "x"])
     for i, num_iterations in enumerate(T):
-        func = lambda x: adaboost_model.partial_predict(x, num_iterations)
-        fig.add_traces([decision_surface(func, lims[0],
+        fig.add_traces([decision_surface(lambda x:
+                                         adaboost_model.partial_predict(x, num_iterations), lims[0],
                                          lims[1], showscale=False),
                         go.Scatter(x=test_X[:, 0], y=test_X[:, 1],
                                    mode="markers",
@@ -95,8 +95,8 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
             best_predictions = adaboost_model.partial_predict(test_X, i)
             best_num_iterations = i
     fig = go.Figure()
-    func = lambda x: adaboost_model.partial_predict(x, best_num_iterations)
-    fig.add_traces([decision_surface(func, lims[0],
+    fig.add_traces([decision_surface(lambda x:
+                                     adaboost_model.partial_predict(x, best_num_iterations), lims[0],
                                      lims[1], showscale=False),
                     go.Scatter(x=test_X[:, 0], y=test_X[:, 1],
                                mode="markers",
