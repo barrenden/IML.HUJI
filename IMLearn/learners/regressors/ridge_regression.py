@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
+from IMLearn.metrics import loss_functions
 
 
 class RidgeRegression(BaseEstimator):
@@ -32,12 +33,6 @@ class RidgeRegression(BaseEstimator):
             Coefficients vector fitted by linear regression. To be set in
             `LinearRegression.fit` function.
         """
-
-
-        """
-        Initialize a ridge regression model
-        :param lam: scalar value of regularization parameter
-        """
         super().__init__()
         self.coefs_ = None
         self.include_intercept_ = include_intercept
@@ -59,7 +54,11 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = np.c_[np.ones(X.shape[0]), X] # add a column of ones to X
+        first_term = np.linalg.inv(X.T @ X + self.lam_ * np.identity(X.shape[1]))
+        second_term = np.matmul(X.T, y)
+        self.coefs_ = first_term @ second_term
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -75,7 +74,9 @@ class RidgeRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = np.c_[np.ones(X.shape[0]), X]  # add a column of ones to X
+        return np.matmul(X, self.coefs_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -94,4 +95,5 @@ class RidgeRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        raise NotImplementedError()
+        y_pred = self.predict(X)
+        return loss_functions.mean_square_error(y, y_pred)
