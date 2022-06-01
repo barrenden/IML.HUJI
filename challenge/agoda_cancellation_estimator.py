@@ -66,8 +66,7 @@ class AgodaCancellationEstimator(BaseEstimator):
         """
         super().__init__()
         ## After running many combinations of hyperparameters:
-        self.model = RandomForestRegressor(max_depth=3, random_state=0,
-                                           n_estimators=120)
+        self.model = RandomForestRegressor(max_depth=3, random_state=0)
         ## NEW:
         # self.model = AdaBoostClassifier(n_estimators=100)
         # self.model = AdaBoostClassifier(n_estimators=100, random_state=0)
@@ -201,7 +200,7 @@ class AgodaCancellationEstimator(BaseEstimator):
         """
         f1_macros = []
         # threshold_options = [i / 100 for i in range(1, 11)]
-        threshold_options = [0.154924874791318]
+        threshold_options = [0.08]
         for threshold in threshold_options:
             res = self.predict_with_threshold(X, threshold)
             f1_macro = calc_f1_macro(y, res)

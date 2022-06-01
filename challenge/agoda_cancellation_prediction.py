@@ -244,7 +244,7 @@ def evaluate_and_export(estimator, X: np.ndarray, filename: str):
         path to store file at
     """
     pd.DataFrame(estimator.predict_with_threshold(X,
-                                                  threshold=0.154924874791318),
+                                                  threshold=0.08),
                  columns=["predicted_values"]).to_csv(filename, index=False)
 
 
@@ -268,38 +268,44 @@ if __name__ == '__main__':
     # week5_y = pd.read_csv("./week_5_labels.csv")["cancel"]
     # week6_X, _ = load_data("./week_6_test_data.csv", is_train=False)
     # week6_y = pd.read_csv("./week_6_labels.csv")["cancel"]
+    # week7_X, _ = load_data("./week_7_test_set.csv")
+    # week7_y = pd.read_csv("./week_7_labels.csv")["cancel"]
 
-    train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.25)
+    # train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.25)
 
-    weights = np.ones(y.shape[0])
-    for j, val in enumerate(y):
-        if val == 1:
-            weights[j] = 2  # our chosen weights hyperparameter
+    # weights = np.ones(y.shape[0])
+    # for j, val in enumerate(y):
+    #     if val == 1:
+    #         weights[j] = 2  # our chosen weights hyperparameter
 
     # print("\nWeek 1 loss test")
     # check_estimator_on_labels1 = AgodaCancellationEstimator()
-    # check_estimator_on_labels1.fit_with_weight(X, y, weights)
+    # check_estimator_on_labels1.fit(X, y)
     # check_estimator_on_labels1.loss(week1_X, week1_y)
     # print("\nWeek 2 loss test")
     # check_estimator_on_labels2 = AgodaCancellationEstimator()
-    # check_estimator_on_labels2.fit_with_weight(X, y, weights)
+    # check_estimator_on_labels2.fit(X, y)
     # check_estimator_on_labels2.loss(week2_X, week2_y)
     # print("\nWeek 3 loss test")
     # check_estimator_on_labels3 = AgodaCancellationEstimator()
-    # check_estimator_on_labels3.fit_with_weight(X, y, weights)
+    # check_estimator_on_labels3.fit(X, y)
     # check_estimator_on_labels3.loss(week3_X, week3_y)
     # print("\nWeek 4 loss test")
     # check_estimator_on_labels4 = AgodaCancellationEstimator()
-    # check_estimator_on_labels4.fit_with_weight(X, y, weights)
+    # check_estimator_on_labels4.fit(X, y)
     # check_estimator_on_labels4.loss(week4_X, week4_y)
     # print("\nWeek 5 loss test")
     # check_estimator_on_labels5 = AgodaCancellationEstimator()
-    # check_estimator_on_labels5.fit_with_weight(X, y, weights)
+    # check_estimator_on_labels5.fit(X, y)
     # check_estimator_on_labels5.loss(week5_X, week5_y)
     # print("\nWeek 6 loss test")
     # check_estimator_on_labels6 = AgodaCancellationEstimator()
-    # check_estimator_on_labels6.fit_with_weight(X, y, weights)
+    # check_estimator_on_labels6.fit(X, y)
     # check_estimator_on_labels6.loss(week6_X, week6_y)
+    # print("\nWeek 7 loss test")
+    # check_estimator_on_labels7 = AgodaCancellationEstimator()
+    # check_estimator_on_labels7.fit(X, y)
+    # check_estimator_on_labels7.loss(week7_X, week7_y)
 
     # print("\nTrain-Test partition loss test")
     # check_estimator_on_train = AgodaCancellationEstimator()
@@ -340,7 +346,8 @@ if __name__ == '__main__':
 
     # Fit model over data
     estimator = AgodaCancellationEstimator()
-    estimator.fit_with_weight(X, y, weights)
+    # estimator.fit_with_weight(X, y, weights)
+    estimator.fit(X, y)
 
     # Store model predictions over test set
     evaluate_and_export(estimator, test.to_numpy(),
