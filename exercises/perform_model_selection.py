@@ -158,6 +158,8 @@ def select_regularization_parameter(n_samples: int = 50,
     fig.update_layout(title=f"Ridge and Lasso Train and Validation Errors"
                             f" for 0 < lambda < 2.5",
                       showlegend=True)
+    fig.update_xaxes(title="lambda")
+    fig.update_yaxes(title='MSE')
     fig.show()
 
     # Question 8 - Compare best Ridge model,
