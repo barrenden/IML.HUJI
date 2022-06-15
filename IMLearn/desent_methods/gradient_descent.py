@@ -130,7 +130,7 @@ class GradientDescent:
                        grad=f.compute_jacobian(), t=num_iters,
                        eta=self.learning_rate_, delta=cur_norm)
         while num_iters <= self.max_iter_ and cur_norm > self.tol_:
-            cur_solution = solution - self.learning_rate_.lr_step() * f.compute_jacobian()
+            cur_solution = solution - self.learning_rate_.lr_step(t=num_iters) * f.compute_jacobian()
             cur_norm = np.linalg.norm(cur_solution - solution)
             if self.out_type_ == 'best':
                 if f.compute_output() < best_value:

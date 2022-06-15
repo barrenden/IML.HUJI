@@ -103,7 +103,7 @@ def compare_fixed_learning_rates(
         l1_norms = np.apply_along_axis(np.linalg.norm, 1, weights)
         iteration_numbers = list(range(0, len(l1_norms)))
         convergence_fig = go.Figure()
-        convergence_fig.update_layout(title="Convergence Rate for L1 and L2 norm")
+        convergence_fig.update_layout(title=f"Convergence Rate for L1 and L2 norm, eta={eta}")
         convergence_fig.update_xaxes(title="Iteration Number")
         convergence_fig.update_yaxes(title="Norm")
         convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=l1_norms,
@@ -126,14 +126,49 @@ def compare_exponential_decay_rates(
         init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
         eta: float = .1,
         gammas: Tuple[float] = (.9, .95, .99, 1)):
-    # Optimize the L1 objective using different decay-rate values of the exponentially decaying learning rate
-    raise NotImplementedError()
+    # Optimize the L1 objective using different decay-rate values of the
+    # exponentially decaying learning rate
 
     # Plot algorithm's convergence for the different values of gamma
-    raise NotImplementedError()
+    fig = go.Figure()
+    minimal_norm = np.inf
+    for gamma in gammas:
+        l1 = L1(weights=init)
+        callback, values, weights = get_gd_state_recorder_callback()
+        gd = GradientDescent(learning_rate=ExponentialLR(eta, gamma),
+                             callback=callback)
+        gd.fit(l1, X=None, y=None)
+        norms = np.apply_along_axis(np.linalg.norm, 1, weights)
+        if min(values) < minimal_norm:
+            minimal_norm = min(values)
+        iteration_numbers = list(range(0, len(norms)))
+        fig.add_trace(
+            go.Scatter(x=iteration_numbers, y=norms, name=f"gamma={gamma}"))
+    fig.update_layout(title="Convergence Rate as a Function of Iteration"
+                            " Number for Different Decay Rates")
+    fig.update_xaxes(title="Iteration Number")
+    fig.update_yaxes(title="Norm")
+    fig.show()
+    print(f"Lowest L1 norm achieved was {minimal_norm}")
 
     # Plot descent path for gamma=0.95
-    raise NotImplementedError()
+    l1 = L1(weights=init)
+    l2 = L2(weights=init)
+    callback, values, weights = get_gd_state_recorder_callback()
+    gd = GradientDescent(learning_rate=ExponentialLR(eta, 0.95), callback=callback)
+    gd.fit(l1, X=None, y=None)
+    fig = plot_descent_path(L1, np.array(weights), title=f"L1,"
+                                                         f" eta={eta},"
+                                                         f" gamma=0.95")
+    fig.show()
+    callback, values, weights = get_gd_state_recorder_callback()
+    gd = GradientDescent(learning_rate=ExponentialLR(eta, 0.95),
+                         callback=callback)
+    gd.fit(l2, X=None, y=None)
+    fig = plot_descent_path(L2, np.array(weights), title=f"L2,"
+                                                         f" eta={eta},"
+                                                         f" gamma=0.95")
+    fig.show()
 
 
 def load_data(path: str = "../datasets/SAheart.data",
@@ -185,5 +220,5 @@ def fit_logistic_regression():
 if __name__ == '__main__':
     np.random.seed(0)
     compare_fixed_learning_rates()
-    # compare_exponential_decay_rates()
+    compare_exponential_decay_rates()
     # fit_logistic_regression()
