@@ -100,13 +100,12 @@ def compare_fixed_learning_rates(
         gd.fit(l1, X=None, y=None)
         fig = plot_descent_path(L1, np.array(weights), title=f"L1, eta={eta}")
         fig.show()
-        l1_norms = np.apply_along_axis(np.linalg.norm, 1, weights)
-        iteration_numbers = list(range(0, len(l1_norms)))
+        iteration_numbers = list(range(0, len(values)))
         convergence_fig = go.Figure()
         convergence_fig.update_layout(title=f"Convergence Rate for L1 and L2 norm, eta={eta}")
         convergence_fig.update_xaxes(title="Iteration Number")
         convergence_fig.update_yaxes(title="Norm")
-        convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=l1_norms,
+        convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=values,
                                              mode='lines+markers', name="L1"))
         print(f"minimal loss for L1, eta={eta} is {min(values)}")
         callback, values, weights = get_gd_state_recorder_callback()
@@ -114,9 +113,8 @@ def compare_fixed_learning_rates(
         gd.fit(l2, X=None, y=None)
         fig = plot_descent_path(L2, np.array(weights), title=f"L2, eta={eta}")
         fig.show()
-        l2_norms = np.apply_along_axis(np.linalg.norm, 1, weights)
-        iteration_numbers = list(range(0, len(l2_norms)))
-        convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=l2_norms,
+        iteration_numbers = list(range(0, len(values)))
+        convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=values,
                                              mode='lines+markers', name="L2"))
         convergence_fig.show()
         print(f"minimal loss for L2, eta={eta} is {min(values)}\n\n")
@@ -138,12 +136,11 @@ def compare_exponential_decay_rates(
         gd = GradientDescent(learning_rate=ExponentialLR(eta, gamma),
                              callback=callback)
         gd.fit(l1, X=None, y=None)
-        norms = np.apply_along_axis(np.linalg.norm, 1, weights)
         if min(values) < minimal_norm:
             minimal_norm = min(values)
-        iteration_numbers = list(range(0, len(norms)))
+        iteration_numbers = list(range(0, len(values)))
         fig.add_trace(
-            go.Scatter(x=iteration_numbers, y=norms, name=f"gamma={gamma}"))
+            go.Scatter(x=iteration_numbers, y=values, name=f"gamma={gamma}"))
     fig.update_layout(title="Convergence Rate as a Function of Iteration"
                             " Number for Different Decay Rates")
     fig.update_xaxes(title="Iteration Number")
