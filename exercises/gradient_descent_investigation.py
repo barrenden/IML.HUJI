@@ -7,6 +7,7 @@ from IMLearn.desent_methods import GradientDescent, FixedLR, ExponentialLR
 from IMLearn.desent_methods.modules import L1, L2
 from IMLearn.learners.classifiers.logistic_regression import LogisticRegression
 from IMLearn.utils import split_train_test
+from plotly.subplots import make_subplots
 
 import plotly.graph_objects as go
 
@@ -99,11 +100,26 @@ def compare_fixed_learning_rates(
         gd.fit(l1, X=None, y=None)
         fig = plot_descent_path(L1, np.array(weights), title=f"L1, eta={eta}")
         fig.show()
+        l1_norms = np.apply_along_axis(np.linalg.norm, 1, weights)
+        iteration_numbers = list(range(0, len(l1_norms)))
+        convergence_fig = go.Figure()
+        convergence_fig.update_layout(title="Convergence Rate for L1 and L2 norm")
+        convergence_fig.update_xaxes(title="Iteration Number")
+        convergence_fig.update_yaxes(title="Norm")
+        convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=l1_norms,
+                                             mode='lines+markers', name="L1"))
+        print(f"minimal loss for L1, eta={eta} is {min(values)}")
         callback, values, weights = get_gd_state_recorder_callback()
         gd = GradientDescent(learning_rate=FixedLR(eta), callback=callback)
         gd.fit(l2, X=None, y=None)
-        fig = plot_descent_path(L2, np.array(weights), title=f"l2, eta={eta}")
+        fig = plot_descent_path(L2, np.array(weights), title=f"L2, eta={eta}")
         fig.show()
+        l2_norms = np.apply_along_axis(np.linalg.norm, 1, weights)
+        iteration_numbers = list(range(0, len(l2_norms)))
+        convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=l2_norms,
+                                             mode='lines+markers', name="L2"))
+        convergence_fig.show()
+        print(f"minimal loss for L2, eta={eta} is {min(values)}\n\n")
 
 
 def compare_exponential_decay_rates(
