@@ -8,8 +8,11 @@ from IMLearn.desent_methods.modules import L1, L2
 from IMLearn.learners.classifiers.logistic_regression import LogisticRegression
 from IMLearn.utils import split_train_test
 from plotly.subplots import make_subplots
-
+from sklearn.metrics import roc_curve, RocCurveDisplay, auc
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from IMLearn.model_selection import cross_validate
+from IMLearn.metrics.loss_functions import misclassification_error
 
 
 def plot_descent_path(module: Type[BaseModule],
@@ -81,10 +84,9 @@ def get_gd_state_recorder_callback() -> Tuple[
     values_ = []
     weights_ = []
 
-    def callback(solver: GradientDescent, weights: np.ndarray, val: np.ndarray,
-                 grad: np.ndarray, t: int, eta: float, delta: float):
-        weights_.append(weights)
-        values_.append(val)
+    def callback(**kwargs):
+        values_.append(kwargs["val"])
+        weights_.append(kwargs["weights"])
 
     return callback, values_, weights_
 
@@ -102,7 +104,8 @@ def compare_fixed_learning_rates(
         fig.show()
         iteration_numbers = list(range(0, len(values)))
         convergence_fig = go.Figure()
-        convergence_fig.update_layout(title=f"Convergence Rate for L1 and L2 norm, eta={eta}")
+        convergence_fig.update_layout(
+            title=f"Convergence Rate for L1 and L2 norm, eta={eta}")
         convergence_fig.update_xaxes(title="Iteration Number")
         convergence_fig.update_yaxes(title="Norm")
         convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=values,
@@ -152,7 +155,8 @@ def compare_exponential_decay_rates(
     l1 = L1(weights=init)
     l2 = L2(weights=init)
     callback, values, weights = get_gd_state_recorder_callback()
-    gd = GradientDescent(learning_rate=ExponentialLR(eta, 0.95), callback=callback)
+    gd = GradientDescent(learning_rate=ExponentialLR(eta, 0.95),
+                         callback=callback)
     gd.fit(l1, X=None, y=None)
     fig = plot_descent_path(L1, np.array(weights), title=f"L1,"
                                                          f" eta={eta},"
@@ -206,16 +210,67 @@ def fit_logistic_regression():
     # Load and split SA Heard Disease dataset
     X_train, y_train, X_test, y_test = load_data()
 
-    # Plotting convergence rate of logistic regression over SA heart disease data
-    raise NotImplementedError()
+    # Plotting convergence rate of logistic regression over SA heart
+    # disease data
+    model = LogisticRegression(solver=GradientDescent(), )
+    model.fit(np.array(X_train), np.array(y_train))
+    probs = model.predict_proba(np.array(X_test))
+    fpr, tpr, thresholds = roc_curve(y_test,
+                                     probs)  # TODO: change to check all alphas in given range
+    roc_auc = auc(fpr, tpr)
+    display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc,
+                              estimator_name=f'Logistic Regression')
+    display.plot()
+    plt.show()
+    best_alpha = np.argmax(tpr - fpr)
+    model = LogisticRegression(solver=GradientDescent(),
+                               alpha=best_alpha / 100)
+    model.fit(np.array(X_train), np.array(y_train))
+    print(f"Using alpha={best_alpha / 100}, test error is"
+          f" {model.loss(np.array(X_test), np.array(y_test))}")
 
-    # Fitting l1- and l2-regularized logistic regression models, using cross-validation to specify values
+    # Fitting l1- and l2-regularized logistic regression models,
+    # using cross-validation to specify values
     # of regularization parameter
-    raise NotImplementedError()
+    # l1
+    lambdas = np.linspace(0, 1, 5)
+    train_scores, validation_scores = [], []
+    for lam in lambdas:
+        model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+                                   penalty='l1', lam=lam)
+        train_score, validation_score = cross_validate(model,
+                                                       np.array(X_train),
+                                                       np.array(y_train),
+                                                       misclassification_error)
+        train_scores.append(train_score)
+        validation_scores.append(validation_score)
+    best_lambda = np.argmin(validation_scores) / 20
+    model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+                               penalty='l1', lam=best_lambda)
+    model.fit(np.array(X_train), np.array(y_train))
+    print(f"Chosen lambda was {best_lambda}, model error was"
+          f" {model.loss(np.array(X_test), np.array(y_test))}")
+    # l2
+    train_scores, validation_scores = [], []
+    for lam in lambdas:
+        model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+                                   penalty='l2', lam=lam)
+        train_score, validation_score = cross_validate(model,
+                                                       np.array(X_train),
+                                                       np.array(y_train),
+                                                       misclassification_error)
+        train_scores.append(train_score)
+        validation_scores.append(validation_score)
+    best_lambda = np.argmin(validation_scores) / 20
+    model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+                               penalty='l2', lam=best_lambda)
+    model.fit(np.array(X_train), np.array(y_train))
+    print(f"Chosen lambda was {best_lambda}, model error was"
+          f" {model.loss(np.array(X_test), np.array(y_test))}")
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     compare_fixed_learning_rates()
     compare_exponential_decay_rates()
-    # fit_logistic_regression()
+    fit_logistic_regression()

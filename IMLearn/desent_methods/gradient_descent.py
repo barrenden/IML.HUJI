@@ -122,15 +122,14 @@ class GradientDescent:
         solution = f.weights_  # initial solution - x(1)
         num_iters = 0
         cur_norm = np.linalg.norm(solution)
-        best_value = f.compute_output()
+        best_value = f.compute_output(X=X, y=y)
         best_solution = solution
         total = 0
-        self.callback_(solver=self, weights=f.weights_,
-                       val=f.compute_output(),
-                       grad=f.compute_jacobian(), t=num_iters,
-                       eta=self.learning_rate_, delta=cur_norm)
+        self.callback_(weights=solution, val=f.compute_output(X=X, y=y))
         while num_iters <= self.max_iter_ and cur_norm > self.tol_:
-            cur_solution = solution - self.learning_rate_.lr_step(t=num_iters) * f.compute_jacobian()
+            eta = self.learning_rate_.lr_step(t=num_iters)
+            grad = f.compute_jacobian(X=X, y=y)
+            cur_solution = solution - eta * grad
             cur_norm = np.linalg.norm(cur_solution - solution)
             if self.out_type_ == 'best':
                 if f.compute_output() < best_value:
@@ -140,13 +139,10 @@ class GradientDescent:
                 total += cur_solution
             solution = cur_solution
             num_iters += 1
-            f.weights = cur_solution
-            self.callback_(solver=self, weights=f.weights_,
-                           val=f.compute_output(),
-                           grad=f.compute_jacobian(), t=num_iters,
-                           eta=self.learning_rate_, delta=cur_norm)
+            f.weights_ = cur_solution
+            self.callback_(weights=f.weights, val=f.compute_output(X=X, y=y))
         if self.out_type_ == 'last':
             return solution
         if self.out_type_ == 'best':
             return best_solution
-        return total / num_iters
+        return total / (num_iters + 1)
