@@ -94,6 +94,10 @@ def get_gd_state_recorder_callback() -> Tuple[
 def compare_fixed_learning_rates(
         init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
         etas: Tuple[float] = (1, .1, .01, .001)):
+    min_l1_loss = np.inf
+    best_eta_l1 = None
+    min_l2_loss = np.inf
+    best_eta_l2 = None
     for eta in etas:
         l1 = L1(weights=init)
         l2 = L2(weights=init)
@@ -110,7 +114,11 @@ def compare_fixed_learning_rates(
         convergence_fig.update_yaxes(title="Norm")
         convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=values,
                                              mode='lines+markers', name="L1"))
-        print(f"minimal loss for L1, eta={eta} is {min(values)}")
+        cur_l1_loss = l1.compute_output()
+        if cur_l1_loss < min_l1_loss:
+            min_l1_loss = cur_l1_loss
+            best_eta_l1 = eta
+        # print(f"minimal loss for L1, eta={eta} is {min(values)}")
         callback, values, weights = get_gd_state_recorder_callback()
         gd = GradientDescent(learning_rate=FixedLR(eta), callback=callback)
         gd.fit(l2, X=None, y=None)
@@ -120,7 +128,13 @@ def compare_fixed_learning_rates(
         convergence_fig.add_trace(go.Scatter(x=iteration_numbers, y=values,
                                              mode='lines+markers', name="L2"))
         convergence_fig.show()
-        print(f"minimal loss for L2, eta={eta} is {min(values)}\n\n")
+        # print(f"minimal loss for L2, eta={eta} is {min(values)}\n\n")
+        cur_l2_loss = l2.compute_output()
+        if cur_l2_loss < min_l2_loss:
+            min_l2_loss = cur_l2_loss
+            best_eta_l2 = eta
+    print(f"Lowest loss achieved for L1 was: {min_l1_loss} with eta={best_eta_l1}")
+    print(f"Lowest loss achieved for L2 was: {min_l2_loss} with eta={best_eta_l2}")
 
 
 def compare_exponential_decay_rates(
@@ -212,17 +226,26 @@ def fit_logistic_regression():
 
     # Plotting convergence rate of logistic regression over SA heart
     # disease data
-    model = LogisticRegression(solver=GradientDescent(), )
+    model = LogisticRegression(solver=GradientDescent())
     model.fit(np.array(X_train), np.array(y_train))
-    probs = model.predict_proba(np.array(X_test))
-    fpr, tpr, thresholds = roc_curve(y_test,
-                                     probs)  # TODO: change to check all alphas in given range
-    roc_auc = auc(fpr, tpr)
-    display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc,
-                              estimator_name=f'Logistic Regression')
-    display.plot()
-    plt.show()
-    best_alpha = np.argmax(tpr - fpr)
+    probs = model.predict_proba(np.array(X_train))
+    tpr, fpr = [], []
+    for alpha in range(101):
+        threshold = alpha / 100
+        y_pred = np.where(probs >= threshold, 1, 0)
+        fp = np.sum((y_pred == 1) & (y_train == 0))
+        tp = np.sum((y_pred == 1) & (y_train == 1))
+        fn = np.sum((y_pred == 0) & (y_train == 1))
+        tn = np.sum((y_pred == 0) & (y_train == 0))
+        fpr.append(fp / (fp + tn))
+        tpr.append(tp / (tp + fn))
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=fpr, y=tpr, mode="markers+lines"))
+    fig.update_layout(title="ROC Curve for Logistic Regression")
+    fig.update_xaxes(title="FPR")
+    fig.update_yaxes(title="TPR")
+    fig.show()
+    best_alpha = np.argmax(np.array(tpr) - np.array(fpr))
     model = LogisticRegression(solver=GradientDescent(),
                                alpha=best_alpha / 100)
     model.fit(np.array(X_train), np.array(y_train))
@@ -244,7 +267,7 @@ def fit_logistic_regression():
                                                        misclassification_error)
         train_scores.append(train_score)
         validation_scores.append(validation_score)
-    best_lambda = np.argmin(validation_scores) / 20
+    best_lambda = lambdas[np.argmin(validation_scores)]
     model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
                                penalty='l1', lam=best_lambda)
     model.fit(np.array(X_train), np.array(y_train))
@@ -261,7 +284,7 @@ def fit_logistic_regression():
                                                        misclassification_error)
         train_scores.append(train_score)
         validation_scores.append(validation_score)
-    best_lambda = np.argmin(validation_scores) / 20
+    best_lambda = lambdas[np.argmin(validation_scores)]
     model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
                                penalty='l2', lam=best_lambda)
     model.fit(np.array(X_train), np.array(y_train))

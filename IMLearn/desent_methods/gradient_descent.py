@@ -139,7 +139,7 @@ class GradientDescent:
                 total += cur_solution
             solution = cur_solution
             num_iters += 1
-            f.weights_ = cur_solution
+            f.weights = cur_solution
             self.callback_(weights=f.weights, val=f.compute_output(X=X, y=y))
         if self.out_type_ == 'last':
             return solution

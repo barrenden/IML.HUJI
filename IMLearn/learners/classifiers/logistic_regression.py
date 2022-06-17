@@ -103,11 +103,15 @@ class LogisticRegression(BaseEstimator):
             # in regularization
         if self.penalty_ == 'l1':
             regularization = L1(coefs_for_regularization)
-        else:  # penalty is 'l2'
+        elif self.penalty_ == 'l2':
             regularization = L2(coefs_for_regularization)
-        model = RegularizedModule(LogisticModule(self.coefs_), regularization,
-                                  weights=self.coefs_)
-        self.solver_.fit(model, X, y)
+        else:  # penalty is "none"
+            regularization = None
+        model = RegularizedModule(fidelity_module=LogisticModule(self.coefs_),
+                                  regularization_module=regularization,
+                                  weights=self.coefs_, lam=self.lam_,
+                                  include_intercept=self.include_intercept_)
+        self.coefs_ = self.solver_.fit(model, X, y)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -124,7 +128,7 @@ class LogisticRegression(BaseEstimator):
             Predicted responses of given samples
         """
         probabilities = self.predict_proba(X)
-        return np.where(probabilities > self.alpha_, 1, 0)
+        return np.where(probabilities >= self.alpha_, 1, 0)
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """
@@ -143,7 +147,9 @@ class LogisticRegression(BaseEstimator):
         if self.include_intercept_:
             num_of_samples = X.shape[0]
             X = np.c_[np.ones(num_of_samples), X]  # add a column of ones to X
-        return np.exp(X @ self.coefs_) / (np.exp(X @ self.coefs_) + 1)
+        xw = X @ self.coefs_
+        exponent = np.exp(xw)
+        return exponent / (exponent + 1)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
