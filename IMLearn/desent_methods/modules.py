@@ -163,10 +163,6 @@ class LogisticModule(BaseModule):
         output: ndarray of shape (n_features,)
             Derivative of function with respect to self.weights at point self.weights
         """
-        # m = X.shape[0]
-        # xw = X @ self.weights
-        # y_hat = 1 / (1 + np.exp(-xw))
-        # return (1 / m) * np.dot(X.T, (y_hat - y))
         sum1 = y @ X
         xw = X @ self.weights
         exp_xw = np.exp(xw)
