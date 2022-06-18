@@ -226,7 +226,8 @@ def fit_logistic_regression():
 
     # Plotting convergence rate of logistic regression over SA heart
     # disease data
-    model = LogisticRegression(solver=GradientDescent())
+    model = LogisticRegression(solver=GradientDescent(learning_rate=FixedLR(1e-4),
+                                                      max_iter=20000))
     model.fit(np.array(X_train), np.array(y_train))
     probs = model.predict_proba(np.array(X_train))
     tpr, fpr = [], []
@@ -246,7 +247,8 @@ def fit_logistic_regression():
     fig.update_yaxes(title="TPR")
     fig.show()
     best_alpha = np.argmax(np.array(tpr) - np.array(fpr))
-    model = LogisticRegression(solver=GradientDescent(),
+    model = LogisticRegression(solver=GradientDescent(learning_rate=FixedLR(1e-4),
+                                                      max_iter=20000),
                                alpha=best_alpha / 100)
     model.fit(np.array(X_train), np.array(y_train))
     print(f"Using alpha={best_alpha / 100}, test error is"
@@ -256,7 +258,7 @@ def fit_logistic_regression():
     # using cross-validation to specify values
     # of regularization parameter
     # l1
-    lambdas = np.linspace(0, 1, 5)
+    lambdas = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]
     train_scores, validation_scores = [], []
     for lam in lambdas:
         model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
