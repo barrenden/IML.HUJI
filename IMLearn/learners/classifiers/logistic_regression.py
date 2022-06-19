@@ -95,7 +95,7 @@ class LogisticRegression(BaseEstimator):
             num_of_samples = X.shape[0]
             X = np.c_[np.ones(num_of_samples), X]  # add a column of ones to X
             weights_len += 1
-        self.coefs_ = np.random.normal(0, 1, weights_len) / X.shape[1]
+        self.coefs_ = np.random.normal(0, 1, weights_len) / (X.shape[1] ** 0.5)
         if self.include_intercept_:
             coefs_for_regularization = self.coefs_[1:]
         else:
