@@ -50,7 +50,7 @@ class L2(BaseModule):
         output: ndarray of shape (n_in,)
             L2 derivative with respect to self.weights at point self.weights
         """
-        return 2 * self.weights
+        return self.weights
 
 
 class L1(BaseModule):
@@ -142,8 +142,6 @@ class LogisticModule(BaseModule):
         sum2 = logarithm.sum()
         sum3 = sum1 - sum2
         return (-1 / X.shape[0]) * sum3
-        # y_hat = 1 / (1 + np.exp(-xw))
-        # return -np.mean(y*(np.log(y_hat)) - (1-y)*np.log(1-y_hat))
 
     def compute_jacobian(self, X: np.ndarray, y: np.ndarray,
                          **kwargs) -> np.ndarray:
@@ -166,9 +164,8 @@ class LogisticModule(BaseModule):
         sum1 = y @ X
         xw = X @ self.weights
         exp_xw = np.exp(xw)
-        sum2 = np.zeros(X.shape[1])
-        for i in range(X.shape[0]):
-            sum2 += (X[i] * exp_xw[i]) / (1 + exp_xw[i])
+        exp1 = exp_xw / (1 + exp_xw)
+        sum2 = X.T @ exp1
         sum3 = sum1 - sum2
         return (-1 / X.shape[0]) * sum3
 

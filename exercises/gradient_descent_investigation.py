@@ -261,7 +261,8 @@ def fit_logistic_regression():
     lambdas = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]
     train_scores, validation_scores = [], []
     for lam in lambdas:
-        model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+        model = LogisticRegression(solver=GradientDescent(learning_rate=FixedLR(1e-4),
+                                                      max_iter=20000), alpha=0.5,
                                    penalty='l1', lam=lam)
         train_score, validation_score = cross_validate(model,
                                                        np.array(X_train),
@@ -270,7 +271,8 @@ def fit_logistic_regression():
         train_scores.append(train_score)
         validation_scores.append(validation_score)
     best_lambda = lambdas[np.argmin(validation_scores)]
-    model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+    model = LogisticRegression(solver=GradientDescent(learning_rate=FixedLR(1e-4),
+                                                      max_iter=20000), alpha=0.5,
                                penalty='l1', lam=best_lambda)
     model.fit(np.array(X_train), np.array(y_train))
     print(f"Chosen lambda was {best_lambda}, model error was"
@@ -278,7 +280,8 @@ def fit_logistic_regression():
     # l2
     train_scores, validation_scores = [], []
     for lam in lambdas:
-        model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+        model = LogisticRegression(solver=GradientDescent(learning_rate=FixedLR(1e-4),
+                                                      max_iter=20000), alpha=0.5,
                                    penalty='l2', lam=lam)
         train_score, validation_score = cross_validate(model,
                                                        np.array(X_train),
@@ -287,7 +290,8 @@ def fit_logistic_regression():
         train_scores.append(train_score)
         validation_scores.append(validation_score)
     best_lambda = lambdas[np.argmin(validation_scores)]
-    model = LogisticRegression(solver=GradientDescent(), alpha=0.5,
+    model = LogisticRegression(solver=GradientDescent(learning_rate=FixedLR(1e-4),
+                                                      max_iter=20000), alpha=0.5,
                                penalty='l2', lam=best_lambda)
     model.fit(np.array(X_train), np.array(y_train))
     print(f"Chosen lambda was {best_lambda}, model error was"
